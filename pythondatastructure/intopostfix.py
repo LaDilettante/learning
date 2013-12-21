@@ -1,4 +1,4 @@
-from pythonds_basic_stack import Stack
+from pythonds_abstracttype import Stack
 
 def infix_to_postfix(infixexpr):
     prec = {}

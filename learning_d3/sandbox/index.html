@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>D3 Geomapping</title>
+    <script type="text/javascript" src="../d3/d3.js"></script>
+    <style type="text/css">
+    </style>
+  </head>
+
+  <body>
+    <div id="chart"></div>
+
+    <script>
+      var w = 500;
+      var h = 300;
+      var dataset = [ 2 , 3 , 4]
+
+      var svg = d3.select("body")
+                  .append("svg")
+                  .attr("width", w)
+                  .attr("height", h)
+
+      svg.selectAll("rect")
+         .data(dataset)
+         .enter()
+         .append("rect")
+         .attr("x", function(d, i) { return i * 20})
+         .attr("width", 20)
+         .attr("height", function(d) { return d * 50 });
+    </script>
+  </body>
+</html>

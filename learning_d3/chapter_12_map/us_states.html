@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>D3 Geomapping</title>
+    <script type="text/javascript" src="../d3/d3.js"></script>
+    <style type="text/css">
+    </style>
+  </head>
+
+  <body>
+    <script type="text/javascript">
+      var w = 500;
+      var h = 300;
+
+      var svg = d3.select("body")
+                  .append("svg")
+                  .attr("width", w)
+                  .attr("height", h);
+
+      var projection = d3.geo.albersUsa()
+                             .translate([w/2, h/2])
+                             .scale([500]);
+
+      var path = d3.geo.path()
+                       .projection(projection);
+
+      d3.json("us-states.json", function(json) {
+        svg.selectAll("path")
+           .data(json.features)
+           .enter()
+           .append("path")
+           .attr("d", path)
+           .style("fill", "steelblue");
+      });
+
+      
+    </script>
+  </body>
+</html>

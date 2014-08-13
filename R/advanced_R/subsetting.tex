@@ -1,0 +1,513 @@
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+
+\usepackage{verbatim}
+
+\title{Subsetting}
+\author{Anh Le}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+\maketitle
+
+\section{Data types}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlstd{,} \hlnum{3}\hlstd{,} \hlnum{4}\hlstd{)}
+\hlstd{x[]} \hlcom{# Returns the original vector}
+\end{alltt}
+\begin{verbatim}
+## [1] 1 2 3 4
+\end{verbatim}
+\begin{alltt}
+\hlstd{x[}\hlnum{0}\hlstd{]} \hlcom{# Returns a zero-length vector}
+\end{alltt}
+\begin{verbatim}
+## numeric(0)
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+If the vector is named, we can
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{y} \hlkwb{<-} \hlkwd{setNames}\hlstd{(x, letters[}\hlnum{1}\hlopt{:}\hlnum{4}\hlstd{])}
+\hlstd{y[}\hlkwd{c}\hlstd{(}\hlstr{"d"}\hlstd{,} \hlstr{"c"}\hlstd{,} \hlstr{"a"}\hlstd{)]}
+\end{alltt}
+\begin{verbatim}
+## d c a 
+## 4 3 1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Logical vectors}
+
+If the logical vector is shorter than the subsetted vector, it will be recycled.
+
+A missing value in the index always yields a missing value in the output
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x} \hlkwb{<-} \hlnum{1}\hlopt{:}\hlnum{4}
+\hlstd{x[}\hlkwd{c}\hlstd{(T, T,} \hlnum{NA}\hlstd{, F)]}
+\end{alltt}
+\begin{verbatim}
+## [1]  1  2 NA
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+\section{Matrices and arrays}
+
+You can also subset higher-dimensional data structures with an integer matrix (or, if named, a character matrix). Each row in the matrix specifies the location of one value, where each column corresponds to a dimension in the array being subsetted. This means that you use a 2 column matrix to subset a matrix, a 3 column matrix to subset a 3d array, and so on. The result is a vector of values:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{vals} \hlkwb{<-} \hlkwd{outer}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,} \hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,} \hlkwc{FUN}\hlstd{=}\hlstr{"paste"}\hlstd{,} \hlkwc{sep}\hlstd{=}\hlstr{","}\hlstd{)}
+\hlstd{select} \hlkwb{<-} \hlkwd{matrix}\hlstd{(}\hlkwc{ncol}\hlstd{=}\hlnum{2}\hlstd{,} \hlkwc{byrow}\hlstd{=}\hlnum{TRUE}\hlstd{,} \hlkwd{c}\hlstd{(}
+  \hlnum{1}\hlstd{,} \hlnum{1}\hlstd{,}
+  \hlnum{3}\hlstd{,} \hlnum{1}\hlstd{,}
+  \hlnum{2}\hlstd{,} \hlnum{4}\hlstd{))}
+\hlstd{vals[select]}
+\end{alltt}
+\begin{verbatim}
+## [1] "1,1" "3,1" "2,4"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\section{Data frame}
+
+Data frame can be subsetted both as a list (when given a single vector) or as a matrix (when given two vectors)
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{df} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}\hlkwc{x}\hlstd{=}\hlnum{1}\hlopt{:}\hlnum{3}\hlstd{,} \hlkwc{y}\hlstd{=}\hlnum{3}\hlopt{:}\hlnum{1}\hlstd{,} \hlkwc{z}\hlstd{=letters[}\hlnum{1}\hlopt{:}\hlnum{3}\hlstd{])}
+
+\hlcom{# An important difference if you select a single column:}
+\hlcom{# select like matrix simplifies (return a 1-d vector)}
+\hlkwd{str}\hlstd{(df[ ,} \hlstr{"y"}\hlstd{])}
+\end{alltt}
+\begin{verbatim}
+##  int [1:3] 3 2 1
+\end{verbatim}
+\begin{alltt}
+\hlcom{# select like a list does not (return a data.frame of 1 column)}
+\hlkwd{str}\hlstd{(df[}\hlstr{"y"}\hlstd{])}
+\end{alltt}
+\begin{verbatim}
+## 'data.frame':	3 obs. of  1 variable:
+##  $ y: int  3 2 1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\section{Exercises}
+
+\begin{enumerate}
+
+\item Fix each of the following common data frame subsetting errors (easy)
+
+\item Why does \verb`x <- 1:5; x[NA]` yield five missing values?
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x} \hlkwb{<-} \hlnum{1}\hlopt{:}\hlnum{5}
+\hlstd{x[}\hlnum{NA}\hlstd{]}
+\end{alltt}
+\begin{verbatim}
+## [1] NA NA NA NA NA
+\end{verbatim}
+\begin{alltt}
+\hlstd{x[}\hlnum{NA_real_}\hlstd{]}
+\end{alltt}
+\begin{verbatim}
+## [1] NA
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+This is because by default \verb`NA` is logical, which gets recycled since x has longer length. \verb`NA_real_` is not logical and does not get recycled, hence returning one \verb`NA` only.
+
+\item What does \verb`upper.tri()` return? How does subsetting a matrix with it work? Do we need any additional subsetting rules to describe its behavior?
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x} \hlkwb{<-} \hlkwd{outer}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,} \hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,} \hlkwc{FUN}\hlstd{=}\hlstr{"*"}\hlstd{)}
+\hlstd{x}
+\end{alltt}
+\begin{verbatim}
+##      [,1] [,2] [,3] [,4] [,5]
+## [1,]    1    2    3    4    5
+## [2,]    2    4    6    8   10
+## [3,]    3    6    9   12   15
+## [4,]    4    8   12   16   20
+## [5,]    5   10   15   20   25
+\end{verbatim}
+\begin{alltt}
+\hlstd{x[}\hlkwd{upper.tri}\hlstd{(x)]}
+\end{alltt}
+\begin{verbatim}
+##  [1]  2  3  6  4  8 12  5 10 15 20
+\end{verbatim}
+\begin{alltt}
+\hlkwd{upper.tri}\hlstd{(x)}
+\end{alltt}
+\begin{verbatim}
+##       [,1]  [,2]  [,3]  [,4]  [,5]
+## [1,] FALSE  TRUE  TRUE  TRUE  TRUE
+## [2,] FALSE FALSE  TRUE  TRUE  TRUE
+## [3,] FALSE FALSE FALSE  TRUE  TRUE
+## [4,] FALSE FALSE FALSE FALSE  TRUE
+## [5,] FALSE FALSE FALSE FALSE FALSE
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\item Why does \verb`mtcars[1:20]` return a error? How does it differ from the similar \verb`mtcars[1:20, ]`?
+
+\verb`mtcars[1:20]` tries to select column 1 to 20. There aren't that many columns.
+
+\item Implement your own function that extracts the diagonal entries from a matrix
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{m} \hlkwb{<-} \hlkwd{outer}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,} \hlnum{1}\hlopt{:}\hlnum{6}\hlstd{,} \hlkwc{FUN}\hlstd{=}\hlstr{"paste"}\hlstd{,} \hlkwc{sep}\hlstd{=}\hlstr{","}\hlstd{)}
+\hlstd{my_diag} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{m}\hlstd{) \{}
+  \hlstd{idx} \hlkwb{<-} \hlnum{1}\hlopt{:}\hlkwd{min}\hlstd{(}\hlkwd{dim}\hlstd{(m))}
+  \hlstd{m[}\hlkwd{cbind}\hlstd{(idx, idx)]}
+\hlstd{\}}
+\hlkwd{diag}\hlstd{(m)}
+\end{alltt}
+\begin{verbatim}
+## [1] "1,1" "2,2" "3,3" "4,4" "5,5"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{my_diag}\hlstd{(m)}
+\end{alltt}
+\begin{verbatim}
+## [1] "1,1" "2,2" "3,3" "4,4" "5,5"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\item What does \verb`df[is.na(df)] <- 0` do? How does it work?
+
+Replace any missing value (NA) with 0. \verb`is.na(df)` returns a logical matrix with the same dimension as df.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{df} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}\hlkwc{x}\hlstd{=}\hlnum{1}\hlopt{:}\hlnum{3}\hlstd{,} \hlkwc{y}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{4}\hlstd{,}\hlnum{NA}\hlstd{,}\hlnum{2}\hlstd{))}
+\hlkwd{is.na}\hlstd{(df)}
+\end{alltt}
+\begin{verbatim}
+##          x     y
+## [1,] FALSE FALSE
+## [2,] FALSE  TRUE
+## [3,] FALSE FALSE
+\end{verbatim}
+\begin{alltt}
+\hlkwd{class}\hlstd{(}\hlkwd{is.na}\hlstd{(df))}
+\end{alltt}
+\begin{verbatim}
+## [1] "matrix"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+\end{enumerate}
+
+\section{Subsetting operators}
+
+Because it can return only a single value, you must use \verb`[[` with either a single positive integer or a string.
+
+If you do supply a vector it indexes recursively
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{l} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlkwc{a} \hlstd{=} \hlkwd{list}\hlstd{(}\hlkwc{b} \hlstd{=} \hlkwd{list}\hlstd{(}\hlkwc{c} \hlstd{=} \hlkwd{list}\hlstd{(}\hlkwc{d} \hlstd{=} \hlnum{1}\hlstd{))))}
+\hlstd{l[[}\hlkwd{c}\hlstd{(}\hlstr{"a"}\hlstd{,} \hlstr{"b"}\hlstd{,} \hlstr{"c"}\hlstd{,} \hlstr{"d"}\hlstd{)]]}
+\end{alltt}
+\begin{verbatim}
+## [1] 1
+\end{verbatim}
+\begin{alltt}
+\hlstd{l[[}\hlstr{"a"}\hlstd{]][[}\hlstr{"b"}\hlstd{]][[}\hlstr{"c"}\hlstd{]][[}\hlstr{"d"}\hlstd{]]} \hlcom{# Same}
+\end{alltt}
+\begin{verbatim}
+## [1] 1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\section{Simplifying vs preserving subsetting}
+
+Simplifying subsets returns the simplest possible data structure that can represent the output, and is useful interactively because it usually gives you what you want. Preserving subsetting keeps the structure of the output the same as the input, and is generally better for programming because the result will always be the same type. Omitting \verb`drop = FALSE` when subsetting matrices and data frames is one of the most common sources of programming errors.
+
+\section{Subsetting and assignment}
+
+You can't combine integer indices with NA but you can combine logical indices with NA (where it is treated as FALSE)
+
+WEIRD: PUT IN PULL REQUEST
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlstd{,} \hlnum{3}\hlstd{,} \hlnum{4}\hlstd{)}
+\hlstd{x[}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{NA}\hlstd{)]} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{10}\hlstd{,} \hlnum{20}\hlstd{)}
+\end{alltt}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: NAs are not allowed in subscripted assignments}}\begin{alltt}
+\hlstd{x}
+\end{alltt}
+\begin{verbatim}
+## [1] 1 2 3 4
+\end{verbatim}
+\begin{alltt}
+\hlstd{x[}\hlkwd{c}\hlstd{(T, F,} \hlnum{NA}\hlstd{,} \hlnum{NA}\hlstd{)]} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{10}\hlstd{,} \hlnum{20}\hlstd{,} \hlnum{30}\hlstd{,} \hlnum{40}\hlstd{)}
+\end{alltt}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: NAs are not allowed in subscripted assignments}}\begin{alltt}
+\hlstd{x[}\hlkwd{c}\hlstd{(T, F,} \hlnum{NA}\hlstd{,} \hlnum{NA}\hlstd{)]} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{10}\hlstd{)}
+\hlstd{x}
+\end{alltt}
+\begin{verbatim}
+## [1] 10  2  3  4
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Notice the following behavior when we do subset assignement out of bound. It will lengthen the vector. Missing values are filled in.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x} \hlkwb{<-} \hlnum{1}\hlopt{:}\hlnum{4}
+\hlstd{x[}\hlkwd{c}\hlstd{(F, F, F, F, F, T)]} \hlkwb{<-} \hlnum{10}
+\hlstd{x}
+\end{alltt}
+\begin{verbatim}
+## [1]  1  2  3  4 NA 10
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Subsetting with nothing can be useful in conjunction with assignment because it will preserve the original object class and structure. Example:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Here mtcars remains a data frame}
+\hlstd{mtcars[]} \hlkwb{<-} \hlkwd{lapply}\hlstd{(mtcars, as.integer)}
+\hlcom{# Here mtcars becomes a lsit}
+\hlstd{mtcars} \hlkwb{<-} \hlkwd{lapply}\hlstd{(mtcars, as.integer)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+With lists, you can use subsetting + assignment + NULL to remove components from a list. To add a literal NULL to a list, use [ and list(NULL):
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{l} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlkwc{a}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{b}\hlstd{=}\hlnum{2}\hlstd{)}
+\hlstd{l[[}\hlstr{"b"}\hlstd{]]} \hlkwb{<-} \hlkwa{NULL}
+\hlkwd{str}\hlstd{(l)}
+\end{alltt}
+\begin{verbatim}
+## List of 1
+##  $ a: num 1
+\end{verbatim}
+\begin{alltt}
+\hlstd{l} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlkwc{a}\hlstd{=}\hlnum{1}\hlstd{)}
+\hlstd{l[}\hlstr{"b"}\hlstd{]} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlkwa{NULL}\hlstd{)}
+\hlkwd{str}\hlstd{(l)}
+\end{alltt}
+\begin{verbatim}
+## List of 2
+##  $ a: num 1
+##  $ b: NULL
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\section{Applications}
+
+\subsection{Lookup table}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"m"}\hlstd{,} \hlstr{"m"}\hlstd{,} \hlstr{"u"}\hlstd{,} \hlstr{"f"}\hlstd{,} \hlstr{"m"}\hlstd{,} \hlstr{"f"}\hlstd{,} \hlstr{"f"}\hlstd{,} \hlstr{"f"}\hlstd{)}
+\hlstd{lookup} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"m"}\hlstd{=}\hlstr{"Male"}\hlstd{,} \hlstr{"f"}\hlstd{=}\hlstr{"Female"}\hlstd{,} \hlstr{"u"}\hlstd{=}\hlnum{NA}\hlstd{)}
+\hlstd{lookup[x]}
+\end{alltt}
+\begin{verbatim}
+##        m        m        u        f        m        f        f        f 
+##   "Male"   "Male"       NA "Female"   "Male" "Female" "Female" "Female"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{unname}\hlstd{(lookup[x])}
+\end{alltt}
+\begin{verbatim}
+## [1] "Male"   "Male"   NA       "Female" "Male"   "Female" "Female" "Female"
+\end{verbatim}
+\begin{alltt}
+\hlcom{# Or with fewer output values}
+\hlstd{lookup} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"m"}\hlstd{=}\hlstr{"Known"}\hlstd{,} \hlstr{"f"}\hlstd{=}\hlstr{"Known"}\hlstd{,} \hlstr{"u"}\hlstd{=}\hlstr{"Unknown"}\hlstd{)}
+\hlstd{lookup[x]}
+\end{alltt}
+\begin{verbatim}
+##         m         m         u         f         m         f         f 
+##   "Known"   "Known" "Unknown"   "Known"   "Known"   "Known"   "Known" 
+##         f 
+##   "Known"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Matching and merging by hand (integer subsetting)}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{grades} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlstd{,} \hlnum{2}\hlstd{,} \hlnum{3}\hlstd{,} \hlnum{1}\hlstd{)}
+\hlstd{info} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}
+  \hlkwc{grade} \hlstd{=} \hlnum{3}\hlopt{:}\hlnum{1}\hlstd{,}
+  \hlkwc{desc} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"Excellent"}\hlstd{,} \hlstr{"Good"}\hlstd{,} \hlstr{"Poor"}\hlstd{),}
+  \hlkwc{fail} \hlstd{=} \hlkwd{c}\hlstd{(F, F, T)}
+\hlstd{)}
+
+\hlcom{# Using match}
+\hlstd{info[}\hlkwd{match}\hlstd{(grades, info}\hlopt{$}\hlstd{grade), ]}
+\end{alltt}
+\begin{verbatim}
+##     grade      desc  fail
+## 3       1      Poor  TRUE
+## 2       2      Good FALSE
+## 2.1     2      Good FALSE
+## 1       3 Excellent FALSE
+## 3.1     1      Poor  TRUE
+\end{verbatim}
+\begin{alltt}
+\hlcom{# Using rownames}
+\hlkwd{rownames}\hlstd{(info)} \hlkwb{<-} \hlstd{info}\hlopt{$}\hlstd{grades}
+\hlstd{info[}\hlkwd{as.character}\hlstd{(grades), ]}
+\end{alltt}
+\begin{verbatim}
+##     grade      desc  fail
+## 1       3 Excellent FALSE
+## 2       2      Good FALSE
+## 2.1     2      Good FALSE
+## 3       1      Poor  TRUE
+## 1.1     3 Excellent FALSE
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Random samples/bootstrap (integer subsetting)}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{df} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}\hlkwc{x} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{3}\hlstd{,} \hlkwc{each} \hlstd{=} \hlnum{2}\hlstd{),} \hlkwc{y} \hlstd{=} \hlnum{6}\hlopt{:}\hlnum{1}\hlstd{,} \hlkwc{z} \hlstd{= letters[}\hlnum{1}\hlopt{:}\hlnum{6}\hlstd{])}
+
+\hlcom{# Randomly reorder}
+\hlstd{df[}\hlkwd{sample}\hlstd{(}\hlkwd{nrow}\hlstd{(df)), ]}
+\end{alltt}
+\begin{verbatim}
+##   x y z
+## 1 1 6 a
+## 2 1 5 b
+## 3 2 4 c
+## 4 2 3 d
+## 6 3 1 f
+## 5 3 2 e
+\end{verbatim}
+\begin{alltt}
+\hlcom{# Select 3 random rows}
+\hlstd{df[}\hlkwd{sample}\hlstd{(}\hlkwd{nrow}\hlstd{(df),} \hlnum{3}\hlstd{), ]}
+\end{alltt}
+\begin{verbatim}
+##   x y z
+## 3 2 4 c
+## 2 1 5 b
+## 4 2 3 d
+\end{verbatim}
+\begin{alltt}
+\hlcom{# Select 6 bootstrap replicates}
+\hlstd{df[}\hlkwd{sample}\hlstd{(}\hlkwd{nrow}\hlstd{(df),} \hlnum{6}\hlstd{,} \hlkwc{replace}\hlstd{=T), ]}
+\end{alltt}
+\begin{verbatim}
+##     x y z
+## 3   2 4 c
+## 2   1 5 b
+## 2.1 1 5 b
+## 1   1 6 a
+## 3.1 2 4 c
+## 1.1 1 6 a
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+\end{document}

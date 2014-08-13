@@ -1,0 +1,429 @@
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+
+\usepackage{verbatim}
+
+\title{Advanced R - Functions}
+\date{\today}
+\author{Anh Le}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+\maketitle
+
+\section{Function components}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{f} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) x}\hlopt{^}\hlnum{2}
+\hlstd{f}
+\end{alltt}
+\begin{verbatim}
+## function(x) x^2
+\end{verbatim}
+\begin{alltt}
+\hlkwd{formals}\hlstd{(f)}
+\end{alltt}
+\begin{verbatim}
+## $x
+\end{verbatim}
+\begin{alltt}
+\hlkwd{body}\hlstd{(f)}
+\end{alltt}
+\begin{verbatim}
+## x^2
+\end{verbatim}
+\begin{alltt}
+\hlkwd{environment}\hlstd{(f)}
+\end{alltt}
+\begin{verbatim}
+## <environment: R_GlobalEnv>
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\section{Dynamic lookup}
+
+R looks for values when the function is run, not when it's created.
+
+To check whether a function depends on global variables, use \verb`codetools::findGlobals(f)`.
+\section{Function argument}
+
+\subsection{Calling a function given a list of arguments}
+
+Using \verb`do.call()`
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{args} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{,} \hlkwc{na.rm}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+\hlstd{args}
+\end{alltt}
+\begin{verbatim}
+## [[1]]
+##  [1]  1  2  3  4  5  6  7  8  9 10
+## 
+## $na.rm
+## [1] TRUE
+\end{verbatim}
+\begin{alltt}
+\hlkwd{do.call}\hlstd{(mean, args)}
+\end{alltt}
+\begin{verbatim}
+## [1] 5.5
+\end{verbatim}
+\begin{alltt}
+\hlkwd{mean}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{,} \hlkwc{na.rm}\hlstd{=}\hlnum{TRUE}\hlstd{)} \hlcom{# Equivalent}
+\end{alltt}
+\begin{verbatim}
+## [1] 5.5
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Lazy evaluation}
+
+By default, R function arguments are lazy -- they are only evaluated if they are actually used.
+
+The following happens because in each \verb`adder`, \verb`x` is not evaluated before we first call the first adder. When we do call it, the adder search its environment, see no \verb`x`, then search its parent frame (where it is defined, i.e. the \verb`lapply` environment), in which the loop has ended and \verb`x = 10`. Therefore, for all the adders, \verb`x = 10`.
+
+Notice that each adder has a unique environment, but they all share one parent frame, the \verb`lapply` environment.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x} \hlkwb{=} \hlnum{100}
+\hlstd{add} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{}
+  \hlkwd{print}\hlstd{(}\hlkwd{parent.frame}\hlstd{())}
+  \hlkwd{print}\hlstd{(}\hlkwd{environment}\hlstd{())}
+  \hlkwa{function}\hlstd{(}\hlkwc{y}\hlstd{) x} \hlopt{+} \hlstd{y}
+\hlstd{\}}
+\hlstd{adders} \hlkwb{<-} \hlkwd{lapply}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{, add)}
+\end{alltt}
+\begin{verbatim}
+## <environment: 0x28020c8>
+## <environment: 0x2803240>
+## <environment: 0x28020c8>
+## <environment: 0x2804ed8>
+## <environment: 0x28020c8>
+## <environment: 0x281d4c0>
+## <environment: 0x28020c8>
+## <environment: 0x2822fd8>
+## <environment: 0x28020c8>
+## <environment: 0x2829258>
+## <environment: 0x28020c8>
+## <environment: 0x282a3b0>
+## <environment: 0x28020c8>
+## <environment: 0x282d3f0>
+## <environment: 0x28020c8>
+## <environment: 0x282f440>
+## <environment: 0x28020c8>
+## <environment: 0x2832818>
+## <environment: 0x28020c8>
+## <environment: 0x2834830>
+\end{verbatim}
+\begin{alltt}
+\hlstd{adders[[}\hlnum{1}\hlstd{]](}\hlnum{10}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] 20
+\end{verbatim}
+\begin{alltt}
+\hlstd{adders[[}\hlnum{10}\hlstd{]](}\hlnum{10}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] 20
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+In the following, by forcing the evaluation of \verb`x` in the adder's own environment, we make \verb`x` available there (with the correct value) so the adder does not have to look up to the parent frame, where \verb`x = 10`.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x} \hlkwb{=} \hlnum{100}
+\hlstd{add} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{}
+  \hlkwd{force}\hlstd{(x)} \hlcom{# Equivalent to just x}
+  \hlkwa{function}\hlstd{(}\hlkwc{y}\hlstd{) x} \hlopt{+} \hlstd{y}
+\hlstd{\}}
+\hlstd{adders} \hlkwb{<-} \hlkwd{lapply}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{, add)}
+\hlstd{adders[[}\hlnum{1}\hlstd{]](}\hlnum{10}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] 11
+\end{verbatim}
+\begin{alltt}
+\hlstd{adders[[}\hlnum{10}\hlstd{]](}\hlnum{10}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] 20
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Functions search for arguments and variables in its environment first. If they are not there, functions evaluate arguments in the parent frame (where it's called), but other variables in the parent environment (where it's defined)}
+
+Uncomment the assignment within \verb`p()` to see that functions search for values within its environment first.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{p} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{}
+  \hlcom{# x <- "arg defined within p envir"}
+  \hlcom{# y <- "var defined within p envir"}
+  \hlkwd{cat}\hlstd{(}\hlstr{"Argument ="}\hlstd{, x,} \hlstr{"\textbackslash{}n"}\hlstd{)}
+  \hlkwd{cat}\hlstd{(}\hlstr{"Other variable = "}\hlstd{, y,} \hlstr{"\textbackslash{}n"}\hlstd{)}
+\hlstd{\}}
+\hlstd{p.outer} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{}
+  \hlkwd{p}\hlstd{(x)}
+\hlstd{\}}
+
+\hlstd{y} \hlkwb{<-} \hlstr{"var defined in the global envir"}
+\hlkwd{p.outer}\hlstd{(}\hlstr{"arg defined in the p.outer"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## Argument = arg defined in the p.outer 
+## Other variable =  var defined in the global envir
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Exercises}
+\begin{enumerate}
+\item Clarify the following list of odd function calls (basically just argument matching based on position, partial name, etc.)
+
+\item What does this function return? Why? Which principle does it illustrate?
+
+It will return 3. When x is evaluated, it created both x and y in the environment. Thus the default value is never used.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{f1} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x} \hlstd{= \{y} \hlkwb{<-} \hlnum{1}\hlstd{;} \hlnum{2}\hlstd{\},} \hlkwc{y} \hlstd{=} \hlnum{0}\hlstd{) \{}
+  \hlstd{x} \hlopt{+} \hlstd{y}
+\hlstd{\}}
+\hlkwd{f1}\hlstd{()}
+\end{alltt}
+\begin{verbatim}
+## [1] 3
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\item What does this function return? Why? Which principle does it illustrate?
+
+It will return 100. Lazy evaluation means x is not evaluated until it's called, by what time z already exists. Thus, \verb`x = z` does not raise an error.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{f2} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x} \hlstd{= z) \{}
+  \hlstd{z} \hlkwb{<-} \hlnum{100}
+  \hlstd{x}
+\hlstd{\}}
+\hlkwd{f2}\hlstd{()}
+\end{alltt}
+\begin{verbatim}
+## [1] 100
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+\end{enumerate}
+
+\section{Special calls}
+
+\subsection{Infix function}
+
+Taking a page from Ruby
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{`%||%`} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{a}\hlstd{,} \hlkwc{b}\hlstd{)} \hlkwa{if} \hlstd{(}\hlopt{!}\hlkwd{is.null}\hlstd{(a)) a} \hlkwa{else} \hlstd{b}
+\hlkwd{function_that_might_return_null}\hlstd{()} \hlopt{%||%} \hlstd{default_value}
+\end{alltt}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: could not find function "{}function\_that\_might\_return\_null"{}}}\end{kframe}
+\end{knitrout}
+
+\subsection{Replacement function}
+
+Replacement function typically has 2 arguments (x and value) and MUST return the modified object. Following is a function that modify the second element of a vector:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{`second<-`} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{,} \hlkwc{value}\hlstd{) \{}
+  \hlstd{x[}\hlnum{2}\hlstd{]} \hlkwb{<-} \hlstd{value}
+  \hlstd{x}
+\hlstd{\}}
+\hlstd{x} \hlkwb{<-} \hlnum{1}\hlopt{:}\hlnum{10}
+\hlkwd{second}\hlstd{(x)} \hlkwb{<-} \hlnum{5}
+\hlstd{x}
+\end{alltt}
+\begin{verbatim}
+##  [1]  1  5  3  4  5  6  7  8  9 10
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+There can be more than 2 arguments
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{`modify<-`} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{,} \hlkwc{position}\hlstd{,} \hlkwc{value}\hlstd{) \{}
+  \hlstd{x[position]} \hlkwb{<-} \hlstd{value}
+  \hlstd{x}
+\hlstd{\}}
+\hlstd{x} \hlkwb{<-} \hlnum{1}\hlopt{:}\hlnum{10}
+\hlkwd{modify}\hlstd{(x,} \hlnum{1}\hlstd{)} \hlkwb{<-} \hlnum{10}
+\hlstd{x}
+\end{alltt}
+\begin{verbatim}
+##  [1] 10  2  3  4  5  6  7  8  9 10
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Behind the scene, \verb#modify(x, 1) <- 10# gets translated to \verb#x <- `modify<-`(x, 1, 10)#. Therefore, we can't do \verb#modify(get("x"), 1) <- 10# because it gets translated to the invalid \verb#get("x") <- `modify<-`(get("x"), 1, 10)#.
+
+\subsection{Exercises}
+\begin{enumerate}
+\item Create a list of all the replacement functions found in the base package. Which ones are primitive functions?
+
+\item What are valid names for user created infix functions?
+
+\item Create an infix \verb`xor()` operator
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{`%xor%`} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{s1}\hlstd{,} \hlkwc{s2}\hlstd{) \{}
+  \hlstd{result} \hlkwb{<-} \hlkwd{c}\hlstd{()}
+  \hlkwa{for} \hlstd{(el} \hlkwa{in} \hlkwd{union}\hlstd{(s1, s2)) \{}
+    \hlkwa{if} \hlstd{(}\hlopt{!}\hlstd{(el} \hlopt{%in%} \hlstd{s1} \hlopt{&} \hlstd{el} \hlopt{%in%} \hlstd{s2)) \{}
+      \hlstd{result} \hlkwb{<-} \hlkwd{c}\hlstd{(result, el)}
+    \hlstd{\}}
+  \hlstd{\}}
+  \hlkwd{return}\hlstd{(result)}
+\hlstd{\}}
+\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlstd{,} \hlnum{6}\hlstd{)} \hlopt{%xor%} \hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,} \hlnum{4}\hlstd{,} \hlnum{7}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] 1 6 4 7
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\end{enumerate}
+
+\subsection{Return values}
+
+Function can return \verb`invisible` values, which are not printed out by default when you call the function.
+
+You can force an invisible value to be displayed by wrapping it in parentheses
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{f1} \hlkwb{<-} \hlkwa{function}\hlstd{()} \hlnum{1}
+\hlstd{f2} \hlkwb{<-} \hlkwa{function}\hlstd{()} \hlkwd{invisible}\hlstd{(}\hlnum{1}\hlstd{)}
+\hlkwd{f1}\hlstd{()}
+\end{alltt}
+\begin{verbatim}
+## [1] 1
+\end{verbatim}
+\begin{alltt}
+\hlkwd{f2}\hlstd{()}
+\hlstd{(}\hlkwd{f2}\hlstd{())}
+\end{alltt}
+\begin{verbatim}
+## [1] 1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{On exit}
+
+The code in \verb`on.exit()` is run regardless of how the function exits, whether with an explicit (early) return, an error, or simply reaching the end of the function body.
+
+An example:
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{in_dir} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{dir}\hlstd{) \{}
+  \hlstd{old} \hlkwb{<-} \hlkwd{getwd}\hlstd{()}
+  \hlkwd{on.exit}\hlstd{(}\hlkwd{setwd}\hlstd{(old))}
+
+  \hlkwd{setwd}\hlstd{(dir)}
+  \hlkwd{print}\hlstd{(}\hlkwd{getwd}\hlstd{())}
+\hlstd{\}}
+\hlkwd{getwd}\hlstd{()}
+\end{alltt}
+\begin{verbatim}
+## [1] "/home/anh/projects/learning/R/advanced_R"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{in_dir}\hlstd{(}\hlstr{"~"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] "/home/anh"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{getwd}\hlstd{()}
+\end{alltt}
+\begin{verbatim}
+## [1] "/home/anh/projects/learning/R/advanced_R"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\end{document}

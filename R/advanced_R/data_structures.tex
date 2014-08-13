@@ -1,0 +1,536 @@
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+
+\usepackage{verbatim}
+
+\title{Advanced R - Data structure}
+\date{\today}
+\author{Anh Le}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+\maketitle
+
+
+\section{Vector}
+
+\verb`is.vector()` does not test if an object is a vector. Instead it returns \verb`TRUE` only if the object is a vector with no attributes apart from names.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{real_vector} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlstd{,} \hlnum{3}\hlstd{)}
+\hlkwd{is.vector}\hlstd{(real_vector)}
+\end{alltt}
+\begin{verbatim}
+## [1] TRUE
+\end{verbatim}
+\begin{alltt}
+\hlkwd{attr}\hlstd{(real_vector,} \hlstr{"someattr"}\hlstd{)} \hlkwb{<-} \hlstr{"attrvalue"}
+\hlkwd{is.vector}\hlstd{(real_vector)}
+\end{alltt}
+\begin{verbatim}
+## [1] FALSE
+\end{verbatim}
+\begin{alltt}
+\hlkwd{is.atomic}\hlstd{(real_vector)}
+\end{alltt}
+\begin{verbatim}
+## [1] TRUE
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Atomic vector}
+
+\verb`NA` is a logical vector of length one. \verb`NA` is coerced to the appropriate type to blend in with the rest of the vector.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{typeof}\hlstd{(}\hlnum{NA}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] "logical"
+\end{verbatim}
+\begin{alltt}
+\hlstd{v} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlstd{,} \hlnum{NA}\hlstd{,} \hlnum{3}\hlstd{);} \hlkwd{typeof}\hlstd{(v[}\hlnum{3}\hlstd{])}
+\end{alltt}
+\begin{verbatim}
+## [1] "double"
+\end{verbatim}
+\begin{alltt}
+\hlstd{v} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{1L}\hlstd{,} \hlnum{2L}\hlstd{,} \hlnum{NA}\hlstd{,} \hlnum{3L}\hlstd{);} \hlkwd{typeof}\hlstd{(v[}\hlnum{3}\hlstd{])}
+\end{alltt}
+\begin{verbatim}
+## [1] "integer"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\section{List}
+
+Lists are sometimes called \textbf{recursive} vectors, in contrast to regular \textbf{atomic} vectors.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlkwd{list}\hlstd{(}\hlkwd{list}\hlstd{()))}
+\hlkwd{str}\hlstd{(x)}
+\end{alltt}
+\begin{verbatim}
+## List of 1
+##  $ :List of 1
+##   ..$ : list()
+\end{verbatim}
+\begin{alltt}
+\hlkwd{is.recursive}\hlstd{(x)}
+\end{alltt}
+\begin{verbatim}
+## [1] TRUE
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\verb`c()` combines several list into one. If we try to combine vector and list, the vector will be coerced to list.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlkwd{list}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlstd{),} \hlkwd{c}\hlstd{(}\hlnum{3}\hlstd{,} \hlnum{4}\hlstd{))}
+\hlstd{y} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlkwd{list}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlstd{),} \hlkwd{c}\hlstd{(}\hlnum{3}\hlstd{,} \hlnum{4}\hlstd{))}
+\hlkwd{str}\hlstd{(x)}
+\end{alltt}
+\begin{verbatim}
+## List of 2
+##  $ :List of 2
+##   ..$ : num 1
+##   ..$ : num 2
+##  $ : num [1:2] 3 4
+\end{verbatim}
+\begin{alltt}
+\hlkwd{str}\hlstd{(y)}
+\end{alltt}
+\begin{verbatim}
+## List of 4
+##  $ : num 1
+##  $ : num 2
+##  $ : num 3
+##  $ : num 4
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\section{Exercises}
+
+\begin{enumerate}
+\item What are the six types of atomic vector? How does a list differ from an atomic vector?
+
+Six types: logical, double, integer, character, and complex, raw. List is recursive, can hold multiple typles
+
+\item What makes \verb`is.vector()` and \verb`is.numeric()` fundamentally different to \verb`is.list()` and \verb`is.character()`?
+
+\item Test knowledge of vector coercion rule
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{FALSE}\hlstd{)} \hlcom{# Should be c(1, 0)}
+\end{alltt}
+\begin{verbatim}
+## [1] 1 0
+\end{verbatim}
+\begin{alltt}
+\hlkwd{c}\hlstd{(}\hlstr{"a"}\hlstd{,} \hlnum{1}\hlstd{)} \hlcom{# Should be c("a", "1")}
+\end{alltt}
+\begin{verbatim}
+## [1] "a" "1"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{c}\hlstd{(}\hlkwd{list}\hlstd{(}\hlnum{1}\hlstd{),} \hlstr{"a"}\hlstd{)} \hlcom{# Should be list(1, "a"), cuz "a" is coerced to list first}
+\end{alltt}
+\begin{verbatim}
+## [[1]]
+## [1] 1
+## 
+## [[2]]
+## [1] "a"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{str}\hlstd{(}\hlkwd{c}\hlstd{(}\hlnum{TRUE}\hlstd{,} \hlnum{1L}\hlstd{))} \hlcom{# Should be c(1L, 1L)}
+\end{alltt}
+\begin{verbatim}
+##  int [1:2] 1 1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\item Why do you need to use \verb`unlist()` to convert a list to an atomic vector? Why doesn't \verb`as.vector()` work?
+
+Probably because \verb`list` is already a (recursive, non-atomic) vector. Indeed,
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{l} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlstd{)}
+\hlkwd{is.vector}\hlstd{(l)}
+\end{alltt}
+\begin{verbatim}
+## [1] TRUE
+\end{verbatim}
+\begin{alltt}
+\hlkwd{is.vector}\hlstd{(l,} \hlkwc{mode}\hlstd{=}\hlstr{"logical"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] FALSE
+\end{verbatim}
+\begin{alltt}
+\hlkwd{is.vector}\hlstd{(l,} \hlkwc{mode}\hlstd{=}\hlstr{"list"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] TRUE
+\end{verbatim}
+\begin{alltt}
+\hlkwd{is.vector}\hlstd{(l,} \hlkwc{mode}\hlstd{=}\hlstr{"expression"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] FALSE
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\item Why is \verb`1 == "1"` true? (Because \verb`1 (double)` is coerced to \verb`"1 (character)"`). Why is \verb`-1 < FALSE` true? (Because \verb`FALSE (logical)` is coerced to \verb`0 (double)`). Why is \verb`"one" < 2` false? (Because \verb`2` is coerced to \verb`"2"`, and strings are compared alphabetically)
+
+\item Why is the default missing value, \verb`NA`, a logical vector? What's special about logical vectors?
+
+Probably because it's the most flexible, so whenever it's put together with other values in the vectors, \verb`NA` will be coerced, not the other values.
+
+\end{enumerate}
+
+\section{Attributes}
+
+\section{Factors}
+
+Factors are built on top of integer vectors using two attributes: the \verb`class()`, "factor", which makes them behave differently from regular integer vectors, and the \verb`levels()`, which defines the set of allowed values.
+
+\section{Exercises}
+
+\begin{enumerate}
+\item An early draft used this code to illustrate \verb`structure()`:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{structure}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,} \hlkwc{comment} \hlstd{=} \hlstr{"my attribute"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] 1 2 3 4 5
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+But when you print that object you don't see the comment attribute. Why?
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x} \hlkwb{<-} \hlkwd{structure}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,} \hlkwc{comment}\hlstd{=}\hlstr{"my attribute"}\hlstd{)}
+\hlkwd{comment}\hlstd{(x)}
+\end{alltt}
+\begin{verbatim}
+## [1] "my attribute"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Turns out \verb`comment` is a special attribute that does not get printed. See \verb`help(comment)`.
+
+\item What happens to a factor when you modify its levels?
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{f1} \hlkwb{<-} \hlkwd{factor}\hlstd{(letters)}
+\hlkwd{levels}\hlstd{(f1)} \hlkwb{<-} \hlkwd{rev}\hlstd{(}\hlkwd{levels}\hlstd{(f1))}
+\hlstd{f1}
+\end{alltt}
+\begin{verbatim}
+##  [1] z y x w v u t s r q p o n m l k j i h g f e d c b a
+## Levels: z y x w v u t s r q p o n m l k j i h g f e d c b a
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Both the observations and the level labels are switched to the new levels.
+
+\item What does this code do? How do \verb`f2` and \verb`f3` differ from \verb`f1`
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{f2} \hlkwb{<-} \hlkwd{rev}\hlstd{(}\hlkwd{factor}\hlstd{(letters))}
+\hlstd{f3} \hlkwb{<-} \hlkwd{factor}\hlstd{(letters,} \hlkwc{levels}\hlstd{=}\hlkwd{rev}\hlstd{(letters))}
+\hlstd{f2}
+\end{alltt}
+\begin{verbatim}
+##  [1] z y x w v u t s r q p o n m l k j i h g f e d c b a
+## Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z
+\end{verbatim}
+\begin{alltt}
+\hlstd{f3}
+\end{alltt}
+\begin{verbatim}
+##  [1] a b c d e f g h i j k l m n o p q r s t u v w x y z
+## Levels: z y x w v u t s r q p o n m l k j i h g f e d c b a
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\verb`f2` only switches the order of the observations, the levels is the same as \verb`f1`. \verb`f3` has the same observations as \verb`f1`, but the levels is reversed.
+\end{enumerate}
+
+\section{Matrices and arrays}
+
+\section{Exercises}
+
+\begin{enumerate}
+\item What does \verb`dim()` return when applied to a vector?
+
+It returns \verb`NULL`
+
+\item If \verb`is.matrix(x)` is \verb`TRUE`, what will `is.array(x)` return?
+
+Must also be \verb`TRUE`.
+
+\item How would you describe the following three objects? What makes them different to \verb`1:5`?
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x1} \hlkwb{<-} \hlkwd{array}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{1}\hlstd{,} \hlnum{5}\hlstd{))}
+\hlstd{x2} \hlkwb{<-} \hlkwd{array}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{5}\hlstd{,} \hlnum{1}\hlstd{))}
+\hlstd{x3} \hlkwb{<-} \hlkwd{array}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,} \hlkwd{c}\hlstd{(}\hlnum{5}\hlstd{,} \hlnum{1}\hlstd{,} \hlnum{1}\hlstd{))}
+\hlstd{x1} \hlcom{# 5 1x1 matrices}
+\end{alltt}
+\begin{verbatim}
+## , , 1
+## 
+##      [,1]
+## [1,]    1
+## 
+## , , 2
+## 
+##      [,1]
+## [1,]    2
+## 
+## , , 3
+## 
+##      [,1]
+## [1,]    3
+## 
+## , , 4
+## 
+##      [,1]
+## [1,]    4
+## 
+## , , 5
+## 
+##      [,1]
+## [1,]    5
+\end{verbatim}
+\begin{alltt}
+\hlstd{x2} \hlcom{# 1 1x5 matrix}
+\end{alltt}
+\begin{verbatim}
+## , , 1
+## 
+##      [,1] [,2] [,3] [,4] [,5]
+## [1,]    1    2    3    4    5
+\end{verbatim}
+\begin{alltt}
+\hlstd{x3} \hlcom{# 1 5x1 matrix}
+\end{alltt}
+\begin{verbatim}
+## , , 1
+## 
+##      [,1]
+## [1,]    1
+## [2,]    2
+## [3,]    3
+## [4,]    4
+## [5,]    5
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+\end{enumerate}
+
+\section{Data frames}
+
+Under the hood, a data frame is a list of equal-length vectors.
+
+A data frame share properties with both the matrix and the list. For example, \verb`length()` of a data frame is the length of the underlying list, i.e equivalent to \verb`ncol()`. \verb`names()` is equivalent to \verb`colnames()`.
+
+Same idea with subsetting -- we can subset a dataframe both in list-way (\verb`df$col`) and matrix-way (\verb`df[x, y]`).
+
+Data frame is S3 class, thus its type reflects the underlying vector to build it, which is a list. Use \verb`class()` and \verb`is.data.frame()` to test.
+
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{df} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}\hlkwc{x}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{),} \hlkwc{y}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{3}\hlstd{,}\hlnum{4}\hlstd{))}
+\hlkwd{typeof}\hlstd{(df)}
+\end{alltt}
+\begin{verbatim}
+## [1] "list"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{class}\hlstd{(df)}
+\end{alltt}
+\begin{verbatim}
+## [1] "data.frame"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{is.data.frame}\hlstd{(df)}
+\end{alltt}
+\begin{verbatim}
+## [1] TRUE
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\section{Exercises}
+
+\begin{enumerate}
+\item What attributes does a data frame possess?
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{df} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}\hlkwc{x} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{))}
+\hlkwd{attributes}\hlstd{(df)}
+\end{alltt}
+\begin{verbatim}
+## $names
+## [1] "x"
+## 
+## $row.names
+## [1] 1 2
+## 
+## $class
+## [1] "data.frame"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\item What does \verb`as.matrix()` do when applied to a data frame with columns of different types?
+
+Probably coerced to the least flexible?
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{df} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}\hlkwc{x} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{),} \hlkwc{y}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"a"}\hlstd{,} \hlstr{"b"}\hlstd{))}
+\hlkwd{as.matrix}\hlstd{(df)}
+\end{alltt}
+\begin{verbatim}
+##      x   y  
+## [1,] "1" "a"
+## [2,] "2" "b"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+\item Can you have a data frame with 0 rows? What about 0 columns?
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{df_norows} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}\hlkwc{x}\hlstd{=}\hlkwd{numeric}\hlstd{(}\hlnum{0}\hlstd{),} \hlkwc{y}\hlstd{=}\hlkwd{numeric}\hlstd{(}\hlnum{0}\hlstd{))}
+\hlstd{df_norows}
+\end{alltt}
+\begin{verbatim}
+## [1] x y
+## <0 rows> (or 0-length row.names)
+\end{verbatim}
+\begin{alltt}
+\hlcom{# Cannot have no columns by itsef?}
+\hlcom{# data.frame() returns a df with 0 col and 0 row}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\end{enumerate}
+
+\section{Subsetting and assignment}
+
+You can't combine integer indices with NA but you can combine logical indices with NA (where it is treated as FALSE)
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlstd{,} \hlnum{3}\hlstd{,} \hlnum{4}\hlstd{)}
+\hlstd{x[}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{NA}\hlstd{)]} \hlkwb{<-} \hlnum{10}
+\hlkwd{x}\hlstd{(}\hlkwd{c}\hlstd{(T, F,} \hlnum{NA}\hlstd{,} \hlnum{NA}\hlstd{, T))} \hlkwb{<-} \hlnum{10}
+\end{alltt}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: could not find function "{}x<-"{}}}\begin{alltt}
+\hlstd{x}
+\end{alltt}
+\begin{verbatim}
+## [1] 10  2  3  4
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+\end{document}

@@ -1,0 +1,261 @@
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+
+\usepackage{verbatim}
+
+\title{Advanced R - OO field guide}
+\date{\today}
+\author{Anh Le}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+\maketitle
+
+\section{Base type}
+
+\section{S3}
+
+\subsection{Recognizing objects, generic functions, and methods}
+
+Most objects you encounter are S3 objects. Check by using \verb`pryr::otype()`.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(pryr)}
+\hlstd{df} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}\hlkwc{x} \hlstd{=} \hlnum{1}\hlopt{:}\hlnum{10}\hlstd{,} \hlkwc{y} \hlstd{= letters[}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{])}
+\hlkwd{otype}\hlstd{(df)} \hlcom{# data frame is S3}
+\end{alltt}
+\begin{verbatim}
+## [1] "S3"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{otype}\hlstd{(df}\hlopt{$}\hlstd{x)} \hlcom{# numeric vector is not}
+\end{alltt}
+\begin{verbatim}
+## [1] "base"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{otype}\hlstd{(df}\hlopt{$}\hlstd{y)} \hlcom{# factor is S3}
+\end{alltt}
+\begin{verbatim}
+## [1] "S3"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+In S3, methods belong to functions, called generic functions, or generics for short. S3 methods do not belong to objects or classes. This is different from most other programming languages, but is a legitimate OO style.
+
+Given a class, the job of an S3 generic is to call the right S3 method. You can recognise S3 methods by their names, which look like \verb`generic.class()`. For example, the Date method for the mean() generic is called \verb`mean.Date()`, and the factor method for print() is called \verb`print.factor()`. 
+
+\subsection{Creating new methods and generics}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{f} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlkwd{UseMethod}\hlstd{(}\hlstr{"f"}\hlstd{)} \hlcom{# creating generic}
+\hlstd{f.a} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlstr{"Class a"} \hlcom{# creating method}
+\hlstd{a} \hlkwb{<-} \hlkwd{structure}\hlstd{(}\hlkwd{list}\hlstd{(),} \hlkwc{class}\hlstd{=}\hlstr{"a"}\hlstd{)}
+\hlkwd{class}\hlstd{(a)}
+\end{alltt}
+\begin{verbatim}
+## [1] "a"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{f}\hlstd{(a)}
+\end{alltt}
+\begin{verbatim}
+## [1] "Class a"
+\end{verbatim}
+\begin{alltt}
+\hlstd{mean.a} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlstr{"a"} \hlcom{# adding method to existing generic}
+\hlkwd{mean}\hlstd{(a)}
+\end{alltt}
+\begin{verbatim}
+## [1] "a"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Exercises}
+
+\begin{enumerate}
+\item Read the source code for t() and t.test() and confirm that t.test() is an S3 generic and not an S3 method. What happens if you create an object with class test and call t() with it?
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{t}
+\end{alltt}
+\begin{verbatim}
+## function (x) 
+## UseMethod("t")
+## <bytecode: 0x2ce3250>
+## <environment: namespace:base>
+\end{verbatim}
+\begin{alltt}
+\hlstd{t.test}
+\end{alltt}
+\begin{verbatim}
+## function (x, ...) 
+## UseMethod("t.test")
+## <bytecode: 0x3809870>
+## <environment: namespace:stats>
+\end{verbatim}
+\begin{alltt}
+\hlstd{obj_class_test} \hlkwb{<-} \hlkwd{structure}\hlstd{(}\hlkwd{list}\hlstd{(),} \hlkwc{class}\hlstd{=}\hlstr{"test"}\hlstd{)}
+\hlkwd{class}\hlstd{(obj_class_test)}
+\end{alltt}
+\begin{verbatim}
+## [1] "test"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{t}\hlstd{(obj_class_test)}
+\end{alltt}
+
+
+{\ttfamily\noindent\color{warningcolor}{\#\# Warning: argument is not numeric or logical: returning NA}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: is.atomic(x) is not TRUE}}\end{kframe}
+\end{knitrout}
+
+It looks like \verb`t(obj_class_test)` could not find \verb`t.test` method so fall back to \verb`t.default`.
+
+\item \verb`UseMethod()` calls methods in a special way. Predict what the following code will return, then run it and read the help for \verb`UseMethod()` to figure out what’s going on. Write down the rules in the simplest form possible.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{y} \hlkwb{<-} \hlnum{1}
+\hlstd{g} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{}
+  \hlstd{y} \hlkwb{<-} \hlnum{2}
+  \hlkwd{UseMethod}\hlstd{(}\hlstr{"g"}\hlstd{)}
+\hlstd{\}}
+\hlstd{g.numeric} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) y}
+\hlkwd{g}\hlstd{(}\hlnum{10}\hlstd{)} \hlcom{# 2}
+\end{alltt}
+\begin{verbatim}
+## [1] 2
+\end{verbatim}
+\begin{alltt}
+\hlstd{h} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{}
+  \hlstd{x} \hlkwb{<-} \hlnum{10}
+  \hlkwd{UseMethod}\hlstd{(}\hlstr{"h"}\hlstd{)}
+\hlstd{\}}
+\hlstd{h.character} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlkwd{paste}\hlstd{(}\hlstr{"char"}\hlstd{, x)}
+\hlstd{h.numeric} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlkwd{paste}\hlstd{(}\hlstr{"num"}\hlstd{, x)}
+
+\hlkwd{h}\hlstd{(}\hlstr{"a"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## [1] "char a"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\item Internal generics don’t dispatch on the implicit class of base types. Carefully read \verb`?"internal generic"` to determine why the length of f and g is different in the example below. What function helps distinguish between the behaviour of f and g?
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{f} \hlkwb{<-} \hlkwa{function}\hlstd{()} \hlnum{1}
+\hlstd{g} \hlkwb{<-} \hlkwa{function}\hlstd{()} \hlnum{2}
+\hlkwd{class}\hlstd{(g)} \hlkwb{<-} \hlstr{"function"}
+
+\hlkwd{class}\hlstd{(f)}
+\end{alltt}
+\begin{verbatim}
+## [1] "function"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{class}\hlstd{(g)}
+\end{alltt}
+\begin{verbatim}
+## [1] "function"
+\end{verbatim}
+\begin{alltt}
+\hlstd{length.function} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlstr{"function"}
+\hlkwd{length}\hlstd{(f)}
+\end{alltt}
+\begin{verbatim}
+## [1] 1
+\end{verbatim}
+\begin{alltt}
+\hlkwd{length}\hlstd{(g)}
+\end{alltt}
+\begin{verbatim}
+## [1] "function"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+The difference comes from the fact that "For efficiency, internal dispatch only occurs on objects, that is those for which is.object returns true."
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{is.object}\hlstd{(f)}
+\end{alltt}
+\begin{verbatim}
+## [1] FALSE
+\end{verbatim}
+\begin{alltt}
+\hlkwd{is.object}\hlstd{(g)}
+\end{alltt}
+\begin{verbatim}
+## [1] TRUE
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Only \verb`g` is an object. So only on \verb`g` does \verb`length` dispatch to \verb`length.function`.
+
+\end{enumerate}
+
+\end{document}

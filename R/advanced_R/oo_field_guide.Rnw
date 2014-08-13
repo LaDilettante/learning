@@ -1,0 +1,137 @@
+\documentclass{article}
+
+\usepackage{verbatim}
+
+\title{Advanced R - OO field guide}
+\date{\today}
+\author{Anh Le}
+
+
+\begin{document}
+\maketitle
+
+\section{Base type}
+
+\section{S3}
+
+\subsection{Recognizing objects, generic functions, and methods}
+
+Most objects you encounter are S3 objects. Check by using \verb`pryr::otype()`.
+<<>>=
+library(pryr)
+df <- data.frame(x = 1:10, y = letters[1:10])
+otype(df) # data frame is S3
+otype(df$x) # numeric vector is not
+otype(df$y) # factor is S3
+@
+
+In S3, methods belong to functions, called generic functions, or generics for short. S3 methods do not belong to objects or classes. This is different from most other programming languages, but is a legitimate OO style.
+
+Given a class, the job of an S3 generic is to call the right S3 method. You can recognise S3 methods by their names, which look like \verb`generic.class()`. For example, the Date method for the mean() generic is called \verb`mean.Date()`, and the factor method for print() is called \verb`print.factor()`. 
+
+\subsection{Creating new methods and generics}
+
+<<>>=
+f <- function(x) UseMethod("f") # creating generic
+f.a <- function(x) "Class a" # creating method
+a <- structure(list(), class="a")
+class(a)
+f(a)
+
+mean.a <- function(x) "a" # adding method to existing generic
+mean(a)
+@
+
+\subsection{Exercises}
+
+\begin{enumerate}
+\item Read the source code for t() and t.test() and confirm that t.test() is an S3 generic and not an S3 method. What happens if you create an object with class test and call t() with it?
+
+<<>>=
+t
+t.test
+obj_class_test <- structure(list(), class="test")
+class(obj_class_test)
+t(obj_class_test)
+@
+
+It looks like \verb`t(obj_class_test)` could not find \verb`t.test` method so fall back to \verb`t.default`.
+
+\item \verb`UseMethod()` calls methods in a special way. Predict what the following code will return, then run it and read the help for \verb`UseMethod()` to figure out what’s going on. Write down the rules in the simplest form possible.
+
+<<>>=
+y <- 1
+g <- function(x) {
+  y <- 2
+  UseMethod("g")
+}
+g.numeric <- function(x) y
+g(10) # 2
+
+h <- function(x) {
+  x <- 10
+  UseMethod("h")
+}
+h.character <- function(x) paste("char", x)
+h.numeric <- function(x) paste("num", x)
+
+h("a")
+@
+
+\item Internal generics don’t dispatch on the implicit class of base types. Carefully read \verb`?"internal generic"` to determine why the length of f and g is different in the example below. What function helps distinguish between the behaviour of f and g?
+
+<<>>=
+f <- function() 1
+g <- function() 2
+class(g) <- "function"
+
+class(f)
+class(g)
+
+length.function <- function(x) "function"
+length(f)
+length(g)
+@
+
+The difference comes from the fact that "For efficiency, internal dispatch only occurs on objects, that is those for which is.object returns true."
+
+<<>>=
+is.object(f)
+is.object(g)
+@
+
+Only \verb`g` is an object. So only when used on \verb`g` does \verb`length` dispatch to \verb`length.function`.
+\end{enumerate}
+
+\section{S4}
+
+<<>>=
+library(stats4)
+
+# From example(mle)
+y <- c(26, 17, 13, 12, 20, 5, 9, 8, 5, 4, 8)
+nLL <- function(lambda) - sum(dpois(y, lambda, log = TRUE))
+fit <- mle(nLL, start = list(lambda = 5), nobs = length(y))
+
+# An S4 object
+isS4(fit)
+#> [1] TRUE
+otype(fit)
+#> [1] "S4"
+
+# An S4 generic
+isS4(nobs)
+#> [1] TRUE
+ftype(nobs)
+#> [1] "s4"      "generic"
+
+# Retrieve an S4 method, described later
+mle_nobs <- method_from_call(nobs(fit))
+isS4(mle_nobs)
+#> [1] TRUE
+ftype(mle_nobs)
+#> [1] "s4"     "method"
+@
+
+
+\end{document}

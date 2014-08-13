@@ -1,0 +1,213 @@
+\documentclass{article}
+
+\usepackage{verbatim}
+
+\title{Advanced R - Functions}
+\date{\today}
+\author{Anh Le}
+
+
+\begin{document}
+\maketitle
+
+\section{Function components}
+
+<<>>=
+f <- function(x) x^2
+f
+
+formals(f)
+body(f)
+environment(f)
+@
+
+\section{Dynamic lookup}
+
+R looks for values when the function is run, not when it's created.
+
+To check whether a function depends on global variables, use \verb`codetools::findGlobals(f)`.
+\section{Function argument}
+
+\subsection{Calling a function given a list of arguments}
+
+Using \verb`do.call()`
+
+<<>>=
+args <- list(1:10, na.rm=TRUE)
+args
+do.call(mean, args)
+mean(1:10, na.rm=TRUE) # Equivalent
+@
+
+\subsection{Lazy evaluation}
+
+By default, R function arguments are lazy -- they are only evaluated if they are actually used.
+
+The following happens because in each \verb`adder`, \verb`x` is not evaluated before we first call the first adder. When we do call it, the adder search its environment, see no \verb`x`, then search its parent frame (where it is defined, i.e. the \verb`lapply` environment), in which the loop has ended and \verb`x = 10`. Therefore, for all the adders, \verb`x = 10`.
+
+Notice that each adder has a unique environment, but they all share one parent frame, the \verb`lapply` environment.
+
+<<>>=
+x = 100
+add <- function(x) {
+  print(parent.frame())
+  print(environment())
+  function(y) x + y
+}
+adders <- lapply(1:10, add)
+adders[[1]](10)
+adders[[10]](10)
+@
+
+In the following, by forcing the evaluation of \verb`x` in the adder's own environment, we make \verb`x` available there (with the correct value) so the adder does not have to look up to the parent frame, where \verb`x = 10`.
+
+<<>>=
+x = 100
+add <- function(x) {
+  force(x) # Equivalent to just x
+  function(y) x + y
+}
+adders <- lapply(1:10, add)
+adders[[1]](10)
+adders[[10]](10)
+@
+
+\subsection{Functions search for arguments and variables in its environment first. If they are not there, functions evaluate arguments in the parent frame (where it's called), but other variables in the parent environment (where it's defined)}
+
+Uncomment the assignment within \verb`p()` to see that functions search for values within its environment first.
+
+<<>>=
+p <- function(x) {
+  # x <- "arg defined within p envir"
+  # y <- "var defined within p envir"
+  cat("Argument =", x, "\n")
+  cat("Other variable = ", y, "\n")
+}
+p.outer <- function(x) {
+  p(x)
+}
+
+y <- "var defined in the global envir"
+p.outer("arg defined in the p.outer")
+@
+
+\subsection{Exercises}
+\begin{enumerate}
+\item Clarify the following list of odd function calls (basically just argument matching based on position, partial name, etc.)
+
+\item What does this function return? Why? Which principle does it illustrate?
+
+It will return 3. When x is evaluated, it created both x and y in the environment. Thus the default value is never used.
+
+<<>>=
+f1 <- function(x = {y <- 1; 2}, y = 0) {
+  x + y
+}
+f1()
+@
+
+\item What does this function return? Why? Which principle does it illustrate?
+
+It will return 100. Lazy evaluation means x is not evaluated until it's called, by what time z already exists. Thus, \verb`x = z` does not raise an error.
+<<>>=
+f2 <- function(x = z) {
+  z <- 100
+  x
+}
+f2()
+@
+\end{enumerate}
+
+\section{Special calls}
+
+\subsection{Infix function}
+
+Taking a page from Ruby
+
+<<>>=
+`%||%` <- function(a, b) if (!is.null(a)) a else b
+function_that_might_return_null() %||% default_value
+@
+
+\subsection{Replacement function}
+
+Replacement function typically has 2 arguments (x and value) and MUST return the modified object. Following is a function that modify the second element of a vector:
+<<>>=
+`second<-` <- function(x, value) {
+  x[2] <- value
+  x
+}
+x <- 1:10
+second(x) <- 5
+x
+@
+
+There can be more than 2 arguments
+<<>>=
+`modify<-` <- function(x, position, value) {
+  x[position] <- value
+  x
+}
+x <- 1:10
+modify(x, 1) <- 10
+x
+@
+
+Behind the scene, \verb#modify(x, 1) <- 10# gets translated to \verb#x <- `modify<-`(x, 1, 10)#. Therefore, we can't do \verb#modify(get("x"), 1) <- 10# because it gets translated to the invalid \verb#get("x") <- `modify<-`(get("x"), 1, 10)#.
+
+\subsection{Exercises}
+\begin{enumerate}
+\item Create a list of all the replacement functions found in the base package. Which ones are primitive functions?
+
+\item What are valid names for user created infix functions?
+
+\item Create an infix \verb`xor()` operator
+
+<<>>=
+`%xor%` <- function(s1, s2) {
+  result <- c()
+  for (el in union(s1, s2)) {
+    if (!(el %in% s1 & el %in% s2)) {
+      result <- c(result, el)
+    }
+  }
+  return(result)
+}
+c(1, 2, 6) %xor% c(2, 4, 7)
+@
+
+\end{enumerate}
+
+\subsection{Return values}
+
+Function can return \verb`invisible` values, which are not printed out by default when you call the function.
+
+You can force an invisible value to be displayed by wrapping it in parentheses
+
+<<>>=
+f1 <- function() 1
+f2 <- function() invisible(1)
+f1()
+f2()
+(f2())
+@
+
+\subsection{On exit}
+
+The code in \verb`on.exit()` is run regardless of how the function exits, whether with an explicit (early) return, an error, or simply reaching the end of the function body.
+
+An example: using on.exit to return to the original working directory.
+<<>>=
+in_dir <- function(dir) {
+  old <- getwd()
+  on.exit(setwd(old))
+  
+  setwd(dir)
+  print(getwd())
+}
+getwd()
+in_dir("~")
+getwd()
+@
+
+\end{document}

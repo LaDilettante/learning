@@ -1,0 +1,23 @@
+---
+title: "notes"
+author: "Anh Le"
+date: "June 19, 2016"
+output: html_document
+---
+
+Hill paper focuses on how to calculate CATE when we need multiple X's in order to get unconfoundedness. Green's focus is slightly different -- there, unconfoundedness is guaranteed by the experimental design. He cares more about getting heterogeneous treatment effect.
+
+Don Green method is a little weird. To calculate the treatment effect when a variable $X*$ = $x*$, he constructs 2 matrix which is the same as the observed covariate matrix (including the treatment), except
+- in both matrix, $X*$ is set to $x*$ instead of the observed value
+- in one matrix, treat = 0 and in the other treat = 1
+- all other covariates are kept the same
+
+The result of BART (of 1000 posterior draws) is 2 N x 1000 matrix.
+- in the first matrix, each row is the predicted Y(0) of that observation with X* set to x*
+- in the second matrix, each row is the predicted Y(1) of that observation with X* set to x*
+
+They then average of the row (average over the observation) to get two 1000 element vectors, then subtract the two vectors from each other. (?) What does this one mean? They say it's the CATE when $X*$ is set to $x*$
+
+Can't we just fit two response surface Y(0) and Y(1) using BART, spanning all the multi-dimensional space of X? When do the set
+
+How does this make sense? The vector of outcome of the observations are kept, but the bart is fit to a different covariate matrix each time (with X* set to x*). Doesn't this destroy the relationship?

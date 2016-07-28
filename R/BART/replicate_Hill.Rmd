@@ -1,0 +1,75 @@
+---
+title: "Replicate Hill paper"
+author: "Anh Le"
+date: "July 28, 2016"
+output: html_document
+---
+
+X is positively correlated with both z and y. So if x is omitted the effect of z is exaggerated
+
+```{r}
+library(ggplot2)
+library(BayesTree)
+
+n <- 120
+z <- rbinom(n, size = 1, prob = 0.5)
+
+# Sometimes there's NaN and NA
+xz1 <- rnorm(n, mean = 40, sd = 10)
+xz0 <- rnorm(n, mean = 20, sd = 10)
+x <- xz1 * z + xz0 * (1 - z)
+
+y0 <- rnorm(n, 72 + 3 * sqrt(x), 1)
+y1 <- rnorm(n, 90 + exp(0.06 * x), 1)
+Ey0 <- 72 + 3 * sqrt(x)
+Ey1 <- 90 + exp(0.06 * x)
+
+pd <- na.omit(data.frame(y0, y1, x, z, Ey0, Ey1))
+(p1 <- ggplot(data = pd) +
+  geom_point(aes(x, y0, alpha = 1- z), col = 'blue') +
+  geom_point(aes(x, y1, alpha = z), col = 'red') +
+  geom_smooth(aes(x, y0, linetype='lm'), method = "lm", size = 0.5) +
+  geom_smooth(aes(x, y1, linetype='lm'), method = "lm", size = 0.5))
+```
+
+## Fit Bayes Tree
+
+$$y = f(x) + e, e \sim N(0, \sigma^2)$$
+
+```{r}
+m_0 <- with(pd, bart(x[z==0], y0[z==0], x.test = x))
+m_1 <- with(pd, bart(x[z==1], y1[z==1], x.test = x))
+(p2 <- p1 +
+  geom_line(aes(x, m_0$yhat.test.mean, linetype = 'bart')) +
+  geom_line(aes(x, m_1$yhat.test.mean, linetype = 'bart')))
+```
+
+
+Hill says that if the response surface is modeled correctly, it's sufficient to get the causal effect (don't care about the assignment mechanism). But how do you model the response surface when there is missing data? Plot below, the BART fit sucks when the data is missing (faded points)
+```{r}
+(p3 <- p2 +
+   geom_line(aes(x, Ey0, linetype = 'true')) +
+   geom_line(aes(x, Ey1, linetype = 'true')))
+```
+
+If we have a completely randomized experiment, all the points would be observed (no faded points), because x wouldn't correlated with z, so both the treated and untreated group should span the entire range of x.
+
+So to calculate the heterogenous treatment effect, all we need to do is to fit the two response surface, then calculates the difference between the two curve at any given values of x? Green's method seems unnecessarily complicated.
+
+Calculate confidence interval for the treatment effect
+```{r}
+m_0catt <- with(pd, bart(x[z==0], y0[z==0], x.test = x[z==1]))
+m_1catt <- with(pd, bart(x[z==1], y1[z==1], x.test = x[z==1]))
+
+ci <- m_1catt$yhat.test - m_0catt$yhat.test
+
+pd2 <- as.data.frame(t(apply(ci, 2, function(x) quantile(x, probs = c(0.025, 0.975)))))
+pd2$x <- with(pd, x[z==1])
+pd2$y <- with(pd, Ey1[z==1] - Ey0[z==1])
+
+(p_catt <- ggplot(data = pd2) +
+  geom_linerange(aes(x = x, ymin = `2.5%`, ymax = `97.5%`)) +
+  geom_line(aes(x, y)))
+```
+
+

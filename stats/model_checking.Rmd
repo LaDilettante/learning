@@ -1,0 +1,12 @@
+---
+title: "Bayesian model checking"
+author: "Anh Le"
+date: "6/30/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Create posterior predictive and see whether they make sense (against our knowledge or future data)

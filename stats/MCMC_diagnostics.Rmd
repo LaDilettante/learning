@@ -1,0 +1,51 @@
+---
+title: "MCMC diagnostics"
+author: "Anh Le"
+date: "6/30/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Concept
+
+`n_eff`: `summary(fit)`
+
+`R_hat`: `summary(fit)`
+
+# Resources
+https://pymc-devs.github.io/pymc/modelchecking.html
+
+geweke test:
+- compares the mean and variance of segments from the beginning and end of a single chain
+- if they are similar then it means that the chain has converged (i.e.the beginning and the end don't look so different)
+
+Raftery-Lewis???
+- Determine the number of iterations required to reach convergence, the number of burn-in samples and thinning interval
+- ??? still don't understand how this is done ???
+
+Gelman-Rubin statistic
+- If multiple chains have converged, they must look the same with each other. If not, one or more chains have failed to converge.
+- To check whether chains "look the same", we compare between-chain variance and within-chain variance
+- Rhat < 1.1 is good
+
+Autocorrelation plot to checks the autocorrelation between iterations of the MCMC chain
+
+Goodness of fit
+- Checking if the model fits the data (read more from BDA)
+
+# Model checking BDA chapter 6
+
+Calculate test statistic $T(y^{\text{rep}}, \theta)$ and $T(y, \theta)$ and calculate Bayesian p value
+
+\begin{align}
+p = Pr(T(y^{\text{rep}}, \theta) > T(y, \theta) | y)
+\end{align}
+
+with the probability calculated with regards to the posterior predictive of $y^{\text{re}}$ and the posterior of $\theta$.
+
+# BDA 11.4 11.5
+
+- 
